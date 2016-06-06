@@ -8,17 +8,16 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 use App\Http\Requests;
-use App\Services\ProductService;
 use App\Services\Interfaces\IProductService;
 
-class ProductController extends Controller 
+class ProductController extends Controller
 {
     protected $productService;
 
     /**
      * Initialize product service.
      */
-    public function __construct(IProductService $productService) 
+    public function __construct(IProductService $productService)
     {
         $this->productService = $productService;
     }
@@ -30,11 +29,11 @@ class ProductController extends Controller
      *
      * @return Http response with all the products
      */
-    public function index() 
+    public function index()
     {
         //$result = DB::select('select * from products');
         $result = $this->productService->getAllProducts();
-        return (new Response($result, 200))->header('Content-Type', 'json');   
+        return (new Response($result, 200))->header('Content-Type', 'json');
     }
 
     /**
@@ -42,13 +41,13 @@ class ProductController extends Controller
      *
      * Gets a songle product from database.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return Http response with a single product
      */
-    public function show($id) 
+    public function show($id)
     {
         $result = $this->productService->getProductById($id);
-        return (new Response($result, 200))->header('Content-Type', 'json'); 
+        return (new Response($result, 200))->header('Content-Type', 'json');
     }
 
     /**
@@ -61,20 +60,14 @@ class ProductController extends Controller
      */
     public function store(Request $request) //TODO
     {
-        if(Session::get('login')) 
-        {
+        if (Session::get('login')) {
             $session = Session::get('login');
-            if ($request->header('x-my-token') == $session['token'])
-            {
-                echo ("Product created [*__*] UserID = " . $session['userid']);
-            }
-            else
-            {
+            if ($request->header('x-my-token') == $session['token']) {
+                echo("Product created [*__*] UserID = " . $session['userid']);
+            } else {
                 echo 'token mismatch';
             }
-        }
-        else
-        {
+        } else {
             echo 'unothorized';
         }
     }
@@ -85,10 +78,10 @@ class ProductController extends Controller
      * Update the specified product in database.
      *
      * @param  $request with data to update
-     * @param  int  $id
+     * @param  int $id
      * @return Http Response
      */
-    public function update(Request $request, $id) 
+    public function update(Request $request, $id)
     {
         //TODO
     }
@@ -98,10 +91,10 @@ class ProductController extends Controller
      *
      * Remove the specified product from database.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return Http Response
      */
-    public function destroy($id) 
+    public function destroy($id)
     {
         //TODO
     }

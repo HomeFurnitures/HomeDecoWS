@@ -11,17 +11,17 @@ namespace App\Services\Interfaces;
  */
 interface IAuthService
 {
-	public function checkUser($user);
+    public function checkUser($user);
 
-	public function createToken($username);
+    public function createToken($username);
 
-	public function checkUsername($username);
+    public function checkUsername($username);
 
-	public function checkEmail($email);
+    public function checkEmail($email);
 
-	public function validateUserData($fullUser);
+    public function validateUserData($fullUser);
 
-	public function registerUser($fullUser);
+    public function registerUser($fullUser);
 
-	public function checkData($data);
+    public function checkData($data);
 }

@@ -25,6 +25,13 @@ Route::post('/register', 'MyAuthController@register');
 /**
  * Route product requests
  */
-Route::resource('product', 'ProductController');
+Route::resource('product', 'ProductController',
+    ['except' => ['create', 'edit']]);
 
 
+/**
+ * Route order requests
+ */
+Route::get('order/user-orders', 'OrderController@userOrders');
+Route::resource('order', 'OrderController',
+    ['except' => ['create', 'edit']]);
