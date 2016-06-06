@@ -11,6 +11,15 @@ class Userdetail extends Model {
      * @var array
      */
     protected $fillable = [
-        //
+        'FirstName',
+        'LastName',
+        'Birthday',
+        'Address',
+        'PostalCode',
+        'City',
+        'State',
+        'Country',
+        'Phone',
+        'MobilePhone'
     ];
 }

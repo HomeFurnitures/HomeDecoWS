@@ -11,6 +11,8 @@ class Orederdetail extends Model {
      * @var array
      */
     protected $fillable = [
-        //
+        'OrderID',
+        'ProductID',
+        'Quantity'
     ];
 }
