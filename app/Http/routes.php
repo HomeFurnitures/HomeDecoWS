@@ -16,11 +16,11 @@ Route::get('/', function () {
 });
 
 /**
- * Route login and register requests
+ * Route login requests
  */
 Route::post('/login', 'MyAuthController@logIn');
 Route::post('/logout', 'MyAuthController@logOut');
-Route::post('/register', 'MyAuthController@register');
+//Route::post('/register', 'MyAuthController@register'); // TODO move to user controller
 
 /**
  * Route product requests
@@ -32,6 +32,13 @@ Route::resource('product', 'ProductController',
 /**
  * Route order requests
  */
-Route::get('order/user-orders', 'OrderController@userOrders');
+Route::get('order/self', 'OrderController@getUserOrders');
 Route::resource('order', 'OrderController',
+    ['except' => ['create', 'edit']]);
+
+/**
+ * Route user requests
+ */
+Route::get('user/self', 'UserController@getThisUser');
+Route::resource('user', 'UserController',
     ['except' => ['create', 'edit']]);
