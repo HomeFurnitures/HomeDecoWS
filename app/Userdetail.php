@@ -22,4 +22,6 @@ class Userdetail extends Model {
         'Phone',
         'MobilePhone'
     ];
+
+
 }

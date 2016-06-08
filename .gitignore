@@ -109,6 +109,7 @@ app/storage/
 
 # Laravel 5 & Lumen specific
 bootstrap/cache/
+.env.example
 .env.*.php
 .env.php
 .env
@@ -116,7 +117,7 @@ bootstrap/cache/
 # Rocketeer PHP task runner and deployment package. https://github.com/rocketeers/rocketeer
 .rocketeer/
 
-# Misc
-.env.example
+### Misc
 .gitattributes
-
+_ide_helper.php
+_ide_helper_models.php

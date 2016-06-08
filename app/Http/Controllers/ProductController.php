@@ -23,43 +23,38 @@ class ProductController extends Controller
     }
 
     /**
-     * GET request
+     * Get all the products from storage.
      *
-     * Gets all the products from database.
-     *
-     * @return Http response with all the products
+     * @return \Illuminate\Http\Response
      */
     public function index()
     {
         //$result = DB::select('select * from products');
-        $result = $this->productService->getAllProducts();
-        return (new Response($result, 200))->header('Content-Type', 'json');
+        $response = $this->productService->getAllProducts();
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
-     * GET request
+     * Get the specified product from storage.
      *
-     * Gets a songle product from database.
-     *
-     * @param  int $id
-     * @return Http response with a single product
+     * @param  Integer $id
+     * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        $result = $this->productService->getProductById($id);
-        return (new Response($result, 200))->header('Content-Type', 'json');
+        $response = $this->productService->getProductById($id);
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
-     * POST request
+     * Store a newly created product in storage.
      *
-     * Store a newly created product in database.
-     *
-     * @param  $request with product details
-     * @return Http response
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) //TODO
+    public function store(Request $request)
     {
+        //TODO store product in db
         if (Session::get('login')) {
             $session = Session::get('login');
             if ($request->header('x-my-token') == $session['token']) {
@@ -73,13 +68,11 @@ class ProductController extends Controller
     }
 
     /**
-     * PUT/PATCH request
+     * Update the specified product in storage.
      *
-     * Update the specified product in database.
-     *
-     * @param  $request with data to update
-     * @param  int $id
-     * @return Http Response
+     * @param  \Illuminate\Http\Request $request
+     * @param  Integer $id
+     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -87,12 +80,10 @@ class ProductController extends Controller
     }
 
     /**
-     * DELETE request
+     * Remove the specified product from storage.
      *
-     * Remove the specified product from database.
-     *
-     * @param  int $id
-     * @return Http Response
+     * @param  Integer $id
+     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {

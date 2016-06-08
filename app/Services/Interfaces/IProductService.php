@@ -2,13 +2,6 @@
 
 namespace App\Services\Interfaces;
 
-/**
- * Interface Repository
- *
- * Provides the standard functions to be expected of any repository.
- *
- * @package App\Services\Interfaces
- */
 interface IProductService
 {
     public function getAllProducts();

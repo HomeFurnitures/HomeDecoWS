@@ -18,16 +18,14 @@ Route::get('/', function () {
 /**
  * Route login requests
  */
-Route::post('/login', 'MyAuthController@logIn');
-Route::post('/logout', 'MyAuthController@logOut');
-//Route::post('/register', 'MyAuthController@register'); // TODO move to user controller
+Route::post('/login', 'LoginController@logIn');
+Route::post('/logout', 'LoginController@logOut');
 
 /**
  * Route product requests
  */
 Route::resource('product', 'ProductController',
     ['except' => ['create', 'edit']]);
-
 
 /**
  * Route order requests

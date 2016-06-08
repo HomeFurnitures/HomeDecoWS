@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 
+use Exception;
 use Session;
 
 use App\Services\Interfaces\IAuthService;
@@ -8,23 +9,32 @@ use App\User;
 
 class AuthService implements IAuthService
 {
+    /**
+     * Check if user credentials are valid
+     *
+     * @param $user
+     * @return bool
+     */
     public function checkUser($user)
     {
-
         try {
             $result = User::where(['Username' => $user->Username])->firstOrFail();
 
             if ($result->Password == $user->Password) {
                 return true;
             }
-
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
-
     }
 
+    /**
+     * Create unique token and Session
+     *
+     * @param $username
+     * @return String token
+     */
     public function createToken($username)
     {
         $result = User::where(['Username' => $username])->firstOrFail();
@@ -33,46 +43,23 @@ class AuthService implements IAuthService
         return $store['token'];
     }
 
-    public function checkUsername($username)
+    /**
+     * Log out
+     */
+    public function destroySession()
+    {
+        Session::forget('login');
+    }
+
+    public function checkLogin($token)
     {
         try {
-            User::where(['Username' => $username])->firstOrFail();
-            return true;
-        } catch (\Exception $e) {
+            $sesToken = Session::get('login')['token'];
+            if ($sesToken == $token) {
+                return true;
+            }
             return false;
-        }
-    }
-
-    public function checkEmail($email)
-    {
-        try {
-            User::where(['Email' => $email])->firstOrFail();
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    public function validateUserData($fullUser)
-    {
-        //TODO
-        return false;
-    }
-
-    public function registerUser($fullUser)
-    {
-        //TODO
-    }
-
-    public function checkData($data)
-    {
-        try {
-            //TODO
-            $data->Username;
-            $data->Password;
-            $data->Email;
-            return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
