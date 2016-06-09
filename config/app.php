@@ -157,7 +157,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         /*
-         * Php storm ide helper
+         * Ide helper
          */
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
 

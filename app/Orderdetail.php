@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Orederdetail extends Model {
+class Orderdetail extends Model
+{
     /**
      * The attributes that are mass assignable.
      *

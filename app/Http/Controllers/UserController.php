@@ -102,7 +102,7 @@ class UserController extends Controller
     }
 
     /**
-     * Get logged user's details
+     * Get logged user's details.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response

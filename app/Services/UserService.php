@@ -74,7 +74,7 @@ class UserService implements IUserService
     }
 
     /**
-     * get logged user with his details
+     * Get logged user with his details.
      * 
      * @return array
      */

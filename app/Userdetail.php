@@ -4,7 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Userdetail extends Model {
+class Userdetail extends Model
+{
     /**
      * The attributes that are mass assignable.
      *
@@ -22,6 +23,4 @@ class Userdetail extends Model {
         'Phone',
         'MobilePhone'
     ];
-
-
 }

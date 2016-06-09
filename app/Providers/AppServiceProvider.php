@@ -14,8 +14,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->app->bind('App\Services\Interfaces\IProductService', 'App\Services\ProductService');
-        $this->app->bind('App\Services\Interfaces\IAuthService', 'App\Services\AuthService');
+        $this->app->bind('App\Services\Interfaces\IOrderService', 'App\Services\OrderService');
         $this->app->bind('App\Services\Interfaces\IUserService', 'App\Services\UserService');
+        $this->app->bind('App\Services\Interfaces\IAuthService', 'App\Services\AuthService');
     }
 
     /**
