@@ -6,8 +6,10 @@ use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IOrderService;
 use App\Http\Requests;
 
+use Config;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Validator;
 
 
 class OrderController extends Controller
@@ -41,9 +43,28 @@ class OrderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {       
+        if (!$this->authService->validJson($request->getContent())) {
+            $response = ['message' => Config::get('enum.invalidJson')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
         $data = json_decode($request->getContent());
+        $validator = Validator::make($data, $this->orderService->orderRules());
+        if($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
+        
+        foreach ($data->Products as $product) {
+            $productValidator = Validator::make($product, $this->orderService->orderProductRules());
+            if($productValidator->fails()) {
+                return (new Response($productValidator->messages(), 400))->header('Content-Type', 'json');
+            }
+        }
+        
         $this->orderService->createOrder($data);
+        $response = ['message' => Config::get('enum.successOrder')];
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
@@ -89,13 +110,12 @@ class OrderController extends Controller
     {
         $token = $request->header('x-my-token');
 
-        if ($this->authService->checkLogin($token)) {
-            $response = $this->orderService->getSessionOrders();
-
-            return (new Response($response, 200))->header('Content-Type', 'json');
-        } else {
-            $response = ['message' => 'You are not logged in!'];
+        if (!$this->authService->checkLogin($token)) {
+            $response = ['message' => Config::get('enum.notLogged')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
+
+        $response = $this->orderService->getSessionOrders();
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 }

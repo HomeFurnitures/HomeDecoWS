@@ -5,15 +5,29 @@ namespace App\Services;
 use App\Services\Interfaces\IUserService;
 use App\User;
 use App\Userdetail;
-use Exception;
 use Session;
+use Validator;
 
 class UserService implements IUserService
 {
 
-    public function validateUser($fullUser)
+    public function userRules()
     {
-        // TODO: Implement validateUser() method.
+        return [
+            'User.Username' => 'required|alpha_dash|unique:users,Username',
+            'User.Password' => 'required|min:6|regex:/^[a-zA-Z0-9\.\-\!\@\#\$\%\^\&\*]+$/',
+            'User.Email' => 'required|email|unique:users,Email',
+            "Userdetail.FirstName" => 'required|alpha',
+            "Userdetail.LastName" => 'required|alpha',
+            "Userdetail.Birthday" => 'required|date',
+            "Userdetail.Address" => 'alpha_num',
+            "Userdetail.PostalCode" => 'alpha_num',
+            "Userdetail.City" => 'alpha',
+            "Userdetail.State" => 'alpha',
+            "Userdetail.Country" => 'alpha',
+            "Userdetail.Phone" => 'integer',
+            "Userdetail.MobilePhone" => 'integer'
+        ];
     }
 
     public function registerUser($fullUser)
@@ -42,40 +56,8 @@ class UserService implements IUserService
     }
 
     /**
-     * Check if the specified username exists
-     *
-     * @param $username
-     * @return bool
-     */
-    public function checkUsername($username)
-    {
-        try {
-            User::where(['Username' => $username])->firstOrFail();
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
-     * Check if the specified e-mail exists
-     *
-     * @param $email
-     * @return bool
-     */
-    public function checkEmail($email)
-    {
-        try {
-            User::where(['Email' => $email])->firstOrFail();
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    /**
      * Get logged user with his details.
-     * 
+     *
      * @return array
      */
     public function getSessionUser()

@@ -16,4 +16,8 @@ interface IOrderService
     public function deleteOrder($id);
 
     public function getSessionOrders();
+
+    public function orderRules();
+
+    public function orderProductRules();
 }

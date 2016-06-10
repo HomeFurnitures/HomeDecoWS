@@ -6,8 +6,10 @@ use App\Http\Requests;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IUserService;
 
+use Config;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Validator;
 
 class UserController extends Controller
 {
@@ -40,30 +42,21 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {        
+        if (!$this->authService->validJson($request->getContent())) {
+            $response = ['message' => Config::get('enum.invalidJson')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
         $data = json_decode($request->getContent());
-
-        // check if username exists
-        if ($this->userService->checkUsername($data->Username)) {
-            $response = ['message' => 'This username already exists!'];
-            return (new Response($response, 400))->header('Content-Type', 'json');
+        $validator = Validator::make($data, $this->userService->userRules());
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        // check if password exists
-        if ($this->userService->checkEmail($data->Email)) {
-            $response = ['message' => 'This e-mail already exists!'];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
-        // validate the user details and register // TODO
-        if ($this->userService->validateUser($data)) {
-            $this->userService->registerUser($data);
-            $response = ['message' => 'Registration completed successfully!'];
-            return (new Response($response, 201))->header('Content-Type', 'json');
-        } else {
-            $response = ['message' => 'Invalid user details!'];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
+        $this->userService->registerUser($data);
+        $response = ['message' => Config::get('enum.successRegister')];
+        return (new Response($response, 201))->header('Content-Type', 'json');    
     }
 
     /**
@@ -113,10 +106,9 @@ class UserController extends Controller
 
         if ($this->authService->checkLogin($token)) {
             $response = $this->userService->getSessionUser();
-
             return (new Response($response, 200))->header('Content-Type', 'json');
         } else {
-            $response = ['message' => 'You are not logged in!'];
+            $response = ['message' => Config::get('enums.notLogged')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
     }

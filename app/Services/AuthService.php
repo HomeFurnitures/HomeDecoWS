@@ -6,11 +6,12 @@ use Session;
 
 use App\Services\Interfaces\IAuthService;
 use App\User;
+use Validator;
 
 class AuthService implements IAuthService
 {
     /**
-     * Check if user credentials are valid
+     * Validate user's credentials
      *
      * @param $user
      * @return bool
@@ -44,7 +45,7 @@ class AuthService implements IAuthService
     }
 
     /**
-     * Log out
+     * Log out by destroying the session
      */
     public function destroySession()
     {
@@ -62,5 +63,29 @@ class AuthService implements IAuthService
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Validate $dataJson as a JSON
+     *
+     * @param $dataJson
+     * @return Validator $validator
+     */
+    public function validJson($dataJson)
+    {
+        $validator = Validator::make(
+            array(
+                'jsonData' => $dataJson
+            ),
+            array(
+                'jsonData' => 'json'
+            )
+        );
+
+        if ($validator->fails()) {
+            return false;
+        }
+
+        return true;
     }
 }

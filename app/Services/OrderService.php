@@ -80,4 +80,32 @@ class OrderService implements IOrderService
             'products' => $orderProducts
         ];
     }
+
+    public function orderRules()
+    {
+        return [
+            'UserID' => 'integer',
+            'ShipAddress' => 'required|alpha_num',
+            'BilAddress' => 'required|alpha_num',
+            'PostalCode' => 'required|alpha_num',
+            'City' => 'required|alpha',
+            'State' => 'required|alpha',
+            'Country' => 'required|alpha',
+            'MobilePhone' => 'required|integer',
+            'Phone' => 'integer',
+            'ShippingMethod' => 'required|alpha',
+            'Email' => 'required',
+            'FullName' => 'required|alpha',
+            'Price' => 'required|numeric',
+            'Products' => 'required',
+        ];
+    }
+
+    public function orederProductRules()
+    {
+        return [
+            'ProductID' => 'required|integer',
+            'Quantity' => 'required|integer'
+        ];
+    }
 }

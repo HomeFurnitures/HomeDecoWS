@@ -11,4 +11,6 @@ interface IAuthService
     public function destroySession();
     
     public function checkLogin($token);
+    
+    public function validJson($dataJson);
 }
