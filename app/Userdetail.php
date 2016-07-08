@@ -12,6 +12,7 @@ class Userdetail extends Model
      * @var array
      */
     protected $fillable = [
+        'UserID',
         'FirstName',
         'LastName',
         'Birthday',

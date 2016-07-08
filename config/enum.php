@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'invalidJson' => 'Invalid json syntax!',
+    'invalidJson' => 'Request data must be a valid JSON!',
+    'nullRequest' => 'Request data is  empty!',
     'notLogged' => 'You are not logged in!',
     
     'successRegister' => 'Registration completed successfully!',

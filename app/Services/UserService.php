@@ -6,7 +6,6 @@ use App\Services\Interfaces\IUserService;
 use App\User;
 use App\Userdetail;
 use Session;
-use Validator;
 
 class UserService implements IUserService
 {
@@ -14,25 +13,44 @@ class UserService implements IUserService
     public function userRules()
     {
         return [
-            'User.Username' => 'required|alpha_dash|unique:users,Username',
-            'User.Password' => 'required|min:6|regex:/^[a-zA-Z0-9\.\-\!\@\#\$\%\^\&\*]+$/',
-            'User.Email' => 'required|email|unique:users,Email',
-            "Userdetail.FirstName" => 'required|alpha',
-            "Userdetail.LastName" => 'required|alpha',
-            "Userdetail.Birthday" => 'required|date',
-            "Userdetail.Address" => 'alpha_num',
-            "Userdetail.PostalCode" => 'alpha_num',
-            "Userdetail.City" => 'alpha',
-            "Userdetail.State" => 'alpha',
-            "Userdetail.Country" => 'alpha',
-            "Userdetail.Phone" => 'integer',
-            "Userdetail.MobilePhone" => 'integer'
+            'User.Username'             => 'required|alpha_dash|min:4|max:32|unique:users,Username',
+            'User.Password'             => 'required|min:6|max:32|password',
+            'User.Email'                => 'required|email|max:64|unique:users,Email',
+            "Userdetail.FirstName"      => 'required|alpha|max:32',
+            "Userdetail.LastName"       => 'required|alpha|max:32',
+            "Userdetail.Birthday"       => 'required|date',
+            "Userdetail.Address"        => 'alpha_num_spaces|max:64',
+            "Userdetail.PostalCode"     => 'alpha_num|max:32',
+            "Userdetail.City"           => 'alpha|max:85',
+            "Userdetail.State"          => 'alpha|max:64',
+            "Userdetail.Country"        => 'alpha|max:64',
+            "Userdetail.Phone"          => 'phone|min:10|max:20',
+            "Userdetail.MobilePhone"    => 'phone|min:10|max:20'
         ];
     }
 
     public function registerUser($fullUser)
     {
-        // TODO: Implement registerUser() method.
+        $user = new User();
+        $user->Username = $fullUser['User']['Username'];
+        $user->Password = $fullUser['User']['Password'];
+        $user->Email = $fullUser['User']['Email'];
+        $user->save();
+        $thisUserId = $user->UserID;
+
+        $userDetails = new Userdetail();
+        $userDetails->UserID = $thisUserId;
+        $userDetails->FirstName = $fullUser['Userdetail']['FirstName'];
+        $userDetails->LastName = $fullUser['Userdetail']['LastName'];
+        $userDetails->Birthday = $fullUser['Userdetail']['Birthday'];
+        $userDetails->Address = $fullUser['Userdetail']['Address'];
+        $userDetails->PostalCode = $fullUser['Userdetail']['PostalCode'];
+        $userDetails->City = $fullUser['Userdetail']['City'];
+        $userDetails->State = $fullUser['Userdetail']['State'];
+        $userDetails->Country = $fullUser['Userdetail']['Country'];
+        $userDetails->Phone = $fullUser['Userdetail']['Phone'];
+        $userDetails->MobilePhone = $fullUser['Userdetail']['MobilePhone'];
+        $userDetails->save();
     }
 
     public function getAllUsers()
@@ -64,7 +82,7 @@ class UserService implements IUserService
     {
         $id = Session::get('login')['userid'];
         $user = User::where(['UserID' => $id])->firstOrFail();
-        $userdetails = Userdetail::where(['UserdetailsID' => $user->UserdetailsID])->firstOrFail();
+        $userdetails = Userdetail::where(['UserID' => $id])->firstOrFail();
         return [
             'Username' => $user->Username,
             'Email' => $user->Email,

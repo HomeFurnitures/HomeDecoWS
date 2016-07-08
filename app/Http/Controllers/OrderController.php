@@ -49,13 +49,13 @@ class OrderController extends Controller
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $data = json_decode($request->getContent());
+        $data = json_decode($request->getContent(), true);
         $validator = Validator::make($data, $this->orderService->orderRules());
         if($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
         
-        foreach ($data->Products as $product) {
+        foreach ($data['Products'] as $product) {
             $productValidator = Validator::make($product, $this->orderService->orderProductRules());
             if($productValidator->fails()) {
                 return (new Response($productValidator->messages(), 400))->header('Content-Type', 'json');

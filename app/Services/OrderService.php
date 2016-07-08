@@ -23,27 +23,26 @@ class OrderService implements IOrderService
     public function createOrder($data)
     {
         $order = new Order();
-        $order->ShipAddress = $data;
-        $order->BilAddress = $data;
-        $order->PostalCode = $data;
-        $order->City = $data;
-        $order->State = $data;
-        $order->Country = $data;
-        $order->MobilePhone = $data;
-        $order->Phone = $data;
-        $order->ShippingMethod = $data;
-        $order->Email = $data;
-        $order->FullName = $data;
-        $order->Price = $data;
+        $order->ShipAddress = $data['ShipAddress'];
+        $order->BilAddress = $data['BilAddress'];
+        $order->PostalCode = $data['PostalCode'];
+        $order->City = $data['City'];
+        $order->State = $data['State'];
+        $order->Country = $data['Country'];
+        $order->MobilePhone = $data['MobilePhone'];
+        $order->Phone = $data['Phone'];
+        $order->ShippingMethod = $data['ShippingMethod'];
+        $order->Email = $data['Email'];
+        $order->FullName = $data['FullName'];
+        $order->Price = $data['Price'];
         $order->save();
+        $thisOrderId = $order->OrderID;
 
-        $insertedId = $order->OrderID;
-
-        foreach ($data->Products as $product) {
+        foreach ($data['Products'] as $product) {
             $orderdetails = new Orderdetail();
-            $orderdetails->OrderID = $insertedId;
-            $orderdetails->ProductID = $product->ProductID;
-            $orderdetails->Quantity = $product->Quantity;
+            $orderdetails->OrderID = $thisOrderId;
+            $orderdetails->ProductID = $product['ProductID'];
+            $orderdetails->Quantity = $product['Quantity'];
             $orderdetails->save();
         }
     }
@@ -58,6 +57,7 @@ class OrderService implements IOrderService
         // TODO: Implement deleteOrder() method.
     }
 
+    // TODO fix for multi orders
     public function getSessionOrders()
     {
         $id = Session::get('login')['userid'];
@@ -84,28 +84,28 @@ class OrderService implements IOrderService
     public function orderRules()
     {
         return [
-            'UserID' => 'integer',
-            'ShipAddress' => 'required|alpha_num',
-            'BilAddress' => 'required|alpha_num',
-            'PostalCode' => 'required|alpha_num',
-            'City' => 'required|alpha',
-            'State' => 'required|alpha',
-            'Country' => 'required|alpha',
-            'MobilePhone' => 'required|integer',
-            'Phone' => 'integer',
-            'ShippingMethod' => 'required|alpha',
-            'Email' => 'required',
-            'FullName' => 'required|alpha',
-            'Price' => 'required|numeric',
-            'Products' => 'required',
+            'UserID'            => 'integer|min:1',
+            'ShipAddress'       => 'required|alpha_num_spaces|max:64',
+            'BilAddress'        => 'required|alpha_num_spaces|max:64',
+            'PostalCode'        => 'required|alpha_num|max:32',
+            'City'              => 'required|alpha|max:85',
+            'State'             => 'required|alpha|max:64',
+            'Country'           => 'required|alpha|max:64',
+            'MobilePhone'       => 'required|phone|min:10|max:20',
+            'Phone'             => 'phone|min:10|max:20',
+            'ShippingMethod'    => 'required|alpha|max:32',
+            'Email'             => 'required|email|max:64',
+            'FullName'          => 'required|alpha_spaces|max:128',
+            'Price'             => 'required|numeric|min:0',
+            'Products'          => 'required',
         ];
     }
-
-    public function orederProductRules()
+    
+    public function orderProductRules()
     {
         return [
-            'ProductID' => 'required|integer',
-            'Quantity' => 'required|integer'
+            'ProductID' => 'required|integer|min:1',
+            'Quantity'  => 'required|integer|min:1'
         ];
     }
 }

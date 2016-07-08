@@ -73,6 +73,7 @@ class AuthService implements IAuthService
      */
     public function validJson($dataJson)
     {
+        
         $validator = Validator::make(
             array(
                 'jsonData' => $dataJson

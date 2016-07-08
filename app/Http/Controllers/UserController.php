@@ -18,6 +18,9 @@ class UserController extends Controller
 
     /**
      * Initialize user service.
+     * 
+     * @param IUserService $userService
+     * @param IAuthService $authService
      */
     public function __construct(IUserService $userService, IAuthService $authService)
     {
@@ -42,13 +45,18 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {        
+    {
+        if ($request->getContent() == null) {
+            $response = ['message' => Config::get('enum.nullRequest')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
         if (!$this->authService->validJson($request->getContent())) {
             $response = ['message' => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $data = json_decode($request->getContent());
+        $data = json_decode($request->getContent(), true);
         $validator = Validator::make($data, $this->userService->userRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
@@ -56,7 +64,7 @@ class UserController extends Controller
 
         $this->userService->registerUser($data);
         $response = ['message' => Config::get('enum.successRegister')];
-        return (new Response($response, 201))->header('Content-Type', 'json');    
+        return (new Response($response, 201))->header('Content-Type', 'json');
     }
 
     /**
@@ -79,8 +87,8 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = json_decode($request->getContent());
-        //
+        //$data = json_decode($request->getContent());
+        
     }
 
     /**
@@ -108,7 +116,7 @@ class UserController extends Controller
             $response = $this->userService->getSessionUser();
             return (new Response($response, 200))->header('Content-Type', 'json');
         } else {
-            $response = ['message' => Config::get('enums.notLogged')];
+            $response = ['message' => Config::get('enum.notLogged')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
     }

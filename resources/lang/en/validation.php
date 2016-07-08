@@ -96,7 +96,7 @@ return [
             'rule-name' => 'custom-message',
         ],
     ],
-
+    
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes
@@ -109,5 +109,19 @@ return [
     */
 
     'attributes' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Validation Rules
+    |--------------------------------------------------------------------------
+    |
+    | Custom rules created in app/validators.php
+    |
+    */
+    
+    "alpha_num_spaces"     => "The :attribute may only contain letters, numbers and spaces.",
+    "alpha_spaces"         => "The :attribute may only contain letters and spaces.",
+    "password"             => "The :attribute may only contain letters, numbers and '.', '-', '!', '@', '#', '$', '%', '^', '&', '*'",
+    "phone"                => "The :attribute must be a valid phone number.",
 
 ];
