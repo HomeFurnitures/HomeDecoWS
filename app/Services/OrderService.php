@@ -12,12 +12,20 @@ class OrderService implements IOrderService
 {
     public function getAllOrders()
     {
-        // TODO: Implement getAllOrders() method.
+        $orders = Order::all()->toArray();
+        foreach ($orders as $order) {
+            $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get(['ProductID'])->toArray();
+            $order = array_add($order, 'products', $orderProducts);
+        }
+        return $orders;
     }
 
     public function getOrderById($id)
     {
-        // TODO: Implement getOrderById() method.
+        $order = Order::where(['OrderID' => $id])->firstOrFail()->toArray();
+        $orderProducts = Orderdetail::where(['OrderID' => $id])->get(['ProductID'])->toArray();
+        $order = array_add($order, 'products', $orderProducts);
+        return $order;
     }
 
     public function createOrder($data)
@@ -54,58 +62,47 @@ class OrderService implements IOrderService
 
     public function deleteOrder($id)
     {
-        // TODO: Implement deleteOrder() method.
+        Order::destroy($id);
     }
 
-    // TODO fix for multi orders
     public function getSessionOrders()
     {
         $id = Session::get('login')['userid'];
-        $order = Order::where(['UserID' => $id])->firstOrFail();
-        $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get();
+        $orders = Order::where(['UserID' => $id])->all()->toArray();
 
-        return [
-            'ShipAddress' => $order->ShipAddress,
-            'BilAddress' => $order->BilAddress,
-            'PostalCode' => $order->PostalCode,
-            'City' => $order->City,
-            'State' => $order->State,
-            'Country' => $order->Country,
-            'MobilePhone' => $order->MobilePhone,
-            'Phone' => $order->Phone,
-            'ShippingMethod' => $order->ShippingMethod,
-            'Email' => $order->Email,
-            'FullName' => $order->FullName,
-            'Price' => $order->Price,
-            'products' => $orderProducts
-        ];
+        foreach ($orders as $order) {
+            $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get(['ProductID'])->toArray();
+            $order = array_add($order, 'products', $orderProducts);
+        }
+
+        return $orders;
     }
 
     public function orderRules()
     {
         return [
-            'UserID'            => 'integer|min:1',
-            'ShipAddress'       => 'required|alpha_num_spaces|max:64',
-            'BilAddress'        => 'required|alpha_num_spaces|max:64',
-            'PostalCode'        => 'required|alpha_num|max:32',
-            'City'              => 'required|alpha|max:85',
-            'State'             => 'required|alpha|max:64',
-            'Country'           => 'required|alpha|max:64',
-            'MobilePhone'       => 'required|phone|min:10|max:20',
-            'Phone'             => 'phone|min:10|max:20',
-            'ShippingMethod'    => 'required|alpha|max:32',
-            'Email'             => 'required|email|max:64',
-            'FullName'          => 'required|alpha_spaces|max:128',
-            'Price'             => 'required|numeric|min:0',
-            'Products'          => 'required',
+            'UserID' => 'integer|min:1',
+            'ShipAddress' => 'required|alpha_num_spaces|max:64',
+            'BilAddress' => 'required|alpha_num_spaces|max:64',
+            'PostalCode' => 'required|alpha_num|max:32',
+            'City' => 'required|alpha|max:85',
+            'State' => 'required|alpha|max:64',
+            'Country' => 'required|alpha|max:64',
+            'MobilePhone' => 'required|phone|min:10|max:20',
+            'Phone' => 'phone|min:10|max:20',
+            'ShippingMethod' => 'required|alpha|max:32',
+            'Email' => 'required|email|max:64',
+            'FullName' => 'required|alpha_spaces|max:128',
+            'Price' => 'required|numeric|min:0',
+            'Products' => 'required',
         ];
     }
-    
+
     public function orderProductRules()
     {
         return [
             'ProductID' => 'required|integer|min:1',
-            'Quantity'  => 'required|integer|min:1'
+            'Quantity' => 'required|integer|min:1'
         ];
     }
 }

@@ -55,12 +55,12 @@ class UserService implements IUserService
 
     public function getAllUsers()
     {
-        // TODO: Implement getAllUsers() method.
+        return User::all(); //TODO details
     }
 
     public function getUserById($id)
     {
-        // TODO: Implement getUserById() method.
+        return User::where(['UserID' => $id])->get(); //TODO details
     }
 
     public function updateUser($data, $id)
@@ -70,7 +70,7 @@ class UserService implements IUserService
 
     public function deleteUser($id)
     {
-        // TODO: Implement deleteUser() method.
+        User::destroy($id);
     }
 
     /**

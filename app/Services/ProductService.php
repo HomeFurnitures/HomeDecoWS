@@ -8,28 +8,26 @@ class ProductService implements IProductService
 {
     public function getAllProducts()
     {
-        $result = Product::all();
-        return $result;
+        return Product::all();
     }
 
     public function getProductById($id)
     {
-        $result = Product::where(['ProductID' => $id])->get();
-        return $result;
+        return Product::where(['ProductID' => $id])->get();
     }
 
     public function createProduct($data)
     {
-
+        //TODO
     }
 
     public function updateProduct($data, $id)
     {
-
+        //TODO
     }
 
     public function deleteProduct($id)
     {
-
+        Product::destroy($id);
     }
 }
