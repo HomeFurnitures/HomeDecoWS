@@ -31,6 +31,7 @@ class OrderService implements IOrderService
     public function createOrder($data)
     {
         $order = new Order();
+        $order->UserID = $data['UserID'];
         $order->ShipAddress = $data['ShipAddress'];
         $order->BilAddress = $data['BilAddress'];
         $order->PostalCode = $data['PostalCode'];
@@ -44,7 +45,7 @@ class OrderService implements IOrderService
         $order->FullName = $data['FullName'];
         $order->Price = $data['Price'];
         $order->save();
-        $thisOrderId = $order->OrderID;
+        $thisOrderId = $order->id;
 
         foreach ($data['Products'] as $product) {
             $orderdetails = new Orderdetail();
@@ -68,20 +69,21 @@ class OrderService implements IOrderService
     public function getSessionOrders()
     {
         $id = Session::get('login')['userid'];
-        $orders = Order::where(['UserID' => $id])->all()->toArray();
-
+        $orders = Order::where(['UserID' => $id])->get()->toArray();
+        $fullOrders = [];
         foreach ($orders as $order) {
-            $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get(['ProductID'])->toArray();
+            $orderProducts = Orderdetail::where(['OrderID' => $order['OrderID']])->get(['ProductID', 'Quantity'])->toArray();
             $order = array_add($order, 'products', $orderProducts);
+            array_push($fullOrders, $order);
         }
 
-        return $orders;
+        return $fullOrders;
     }
 
     public function orderRules()
     {
         return [
-            'UserID' => 'integer|min:1',
+            'UserID' => 'exists:users,UserID',
             'ShipAddress' => 'required|alpha_num_spaces|max:64',
             'BilAddress' => 'required|alpha_num_spaces|max:64',
             'PostalCode' => 'required|alpha_num|max:32',
@@ -101,7 +103,7 @@ class OrderService implements IOrderService
     public function orderProductRules()
     {
         return [
-            'ProductID' => 'required|integer|min:1',
+            'ProductID' => 'required|exists:products,ProductID',
             'Quantity' => 'required|integer|min:1'
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Session;
+use Config;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -30,17 +30,25 @@ class LoginController extends Controller
      */
     public function logIn(Request $request)
     {
-        $data = json_decode($request->getContent());
+        if ($request->getContent() == null) {
+            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
 
+        if (!$this->authService->validJson($request->getContent())) {
+            $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
+        $data = json_decode($request->getContent());
         if ($this->authService->checkUser($data)) {
             $token = $this->authService->createToken($data->Username);
-
-            $response = ['x-my-token' => $token];
+            $response = [Config::get('enum.token') => $token];
             return (new Response($response, 200))->header('Content-Type', 'json');
-        } else {
-            $response = ['message' => 'Something went wrong, probably bad credentials!'];
-            return (new Response($response, 401))->header('Content-Type', 'json');
-        }
+        } 
+        
+        $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
+        return (new Response($response, 401))->header('Content-Type', 'json');        
     }
 
     /**
@@ -50,9 +58,12 @@ class LoginController extends Controller
      */
     public function logOut()
     {
-        $this->authService->destroySession();
+        if($this->authService->destroySession()) {
+            $response = [Config::get('enum.message') => Config::get('enum.successLogOut')];
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
 
-        $response = ['message' => 'Logged out successfully'];
-        return (new Response($response, 200))->header('Content-Type', 'json');
+        $response = [Config::get('enum.message') => Config::get('enum.failLogOut')];
+        return (new Response($response, 401))->header('Content-Type', 'json');
     }
 }

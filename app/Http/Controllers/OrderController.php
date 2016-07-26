@@ -43,9 +43,14 @@ class OrderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {       
+    {
+        if ($request->getContent() == null) {
+            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
         if (!$this->authService->validJson($request->getContent())) {
-            $response = ['message' => Config::get('enum.invalidJson')];
+            $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
@@ -63,7 +68,7 @@ class OrderController extends Controller
         }
         
         $this->orderService->createOrder($data);
-        $response = ['message' => Config::get('enum.successOrder')];
+        $response = [Config::get('enum.message') => Config::get('enum.successOrder')];
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
@@ -111,7 +116,7 @@ class OrderController extends Controller
         $token = $request->header('x-my-token');
 
         if (!$this->authService->checkLogin($token)) {
-            $response = ['message' => Config::get('enum.notLogged')];
+            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 

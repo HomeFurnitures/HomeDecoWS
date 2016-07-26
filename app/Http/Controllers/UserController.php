@@ -47,12 +47,12 @@ class UserController extends Controller
     public function store(Request $request)
     {
         if ($request->getContent() == null) {
-            $response = ['message' => Config::get('enum.nullRequest')];
+            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
         if (!$this->authService->validJson($request->getContent())) {
-            $response = ['message' => Config::get('enum.invalidJson')];
+            $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
@@ -63,7 +63,7 @@ class UserController extends Controller
         }
 
         $this->userService->registerUser($data);
-        $response = ['message' => Config::get('enum.successRegister')];
+        $response = [Config::get('enum.message') => Config::get('enum.successRegister')];
         return (new Response($response, 201))->header('Content-Type', 'json');
     }
 
@@ -115,9 +115,9 @@ class UserController extends Controller
         if ($this->authService->checkLogin($token)) {
             $response = $this->userService->getSessionUser();
             return (new Response($response, 200))->header('Content-Type', 'json');
-        } else {
-            $response = ['message' => Config::get('enum.notLogged')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
         }
+        
+        $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+        return (new Response($response, 400))->header('Content-Type', 'json');        
     }
 }

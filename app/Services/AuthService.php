@@ -49,7 +49,12 @@ class AuthService implements IAuthService
      */
     public function destroySession()
     {
-        Session::forget('login');
+        try {
+            Session::forget('login');
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     public function checkLogin($token)
@@ -73,7 +78,6 @@ class AuthService implements IAuthService
      */
     public function validJson($dataJson)
     {
-        
         $validator = Validator::make(
             array(
                 'jsonData' => $dataJson

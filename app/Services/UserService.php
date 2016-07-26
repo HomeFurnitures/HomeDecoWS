@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Interfaces\IUserService;
 use App\User;
 use App\Userdetail;
+use DateTime;
 use Session;
 
 class UserService implements IUserService
@@ -18,7 +19,7 @@ class UserService implements IUserService
             'User.Email'                => 'required|email|max:64|unique:users,Email',
             "Userdetail.FirstName"      => 'required|alpha|max:32',
             "Userdetail.LastName"       => 'required|alpha|max:32',
-            "Userdetail.Birthday"       => 'required|date',
+            "Userdetail.Birthday"       => 'required|date_format:d/m/Y',
             "Userdetail.Address"        => 'alpha_num_spaces|max:64',
             "Userdetail.PostalCode"     => 'alpha_num|max:32',
             "Userdetail.City"           => 'alpha|max:85',
@@ -36,13 +37,15 @@ class UserService implements IUserService
         $user->Password = $fullUser['User']['Password'];
         $user->Email = $fullUser['User']['Email'];
         $user->save();
-        $thisUserId = $user->UserID;
+        $thisUserId = $user->id;
+
+        $date = DateTime::createFromFormat('d/m/Y', $fullUser['Userdetail']['Birthday']);
 
         $userDetails = new Userdetail();
         $userDetails->UserID = $thisUserId;
         $userDetails->FirstName = $fullUser['Userdetail']['FirstName'];
         $userDetails->LastName = $fullUser['Userdetail']['LastName'];
-        $userDetails->Birthday = $fullUser['Userdetail']['Birthday'];
+        $userDetails->Birthday = $date;
         $userDetails->Address = $fullUser['Userdetail']['Address'];
         $userDetails->PostalCode = $fullUser['Userdetail']['PostalCode'];
         $userDetails->City = $fullUser['Userdetail']['City'];
