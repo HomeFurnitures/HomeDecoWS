@@ -157,6 +157,12 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         /*
+         * Application custom providers
+         */
+        App\Providers\ValidatorProvider::class,
+        
+
+        /*
          * Ide helper
          */
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
