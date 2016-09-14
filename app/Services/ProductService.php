@@ -30,4 +30,14 @@ class ProductService implements IProductService
     {
         Product::destroy($id);
     }
+
+    public function productRules()
+    {
+        // TODO: Implement productRules() method.
+    }
+
+    public function productUpdateRules()
+    {
+        // TODO: Implement productUpdateRules() method.
+    }
 }

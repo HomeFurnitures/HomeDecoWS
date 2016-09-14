@@ -7,6 +7,8 @@ interface IUserService
 {
     public function userRules();
 
+    public function userUpdateRules();
+
     public function registerUser($fullUser);
 
     public function getAllUsers();

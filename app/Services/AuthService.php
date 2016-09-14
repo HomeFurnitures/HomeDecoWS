@@ -57,6 +57,12 @@ class AuthService implements IAuthService
         }
     }
 
+    /**
+     * Checks if a user is logged
+     * 
+     * @param $token
+     * @return bool
+     */
     public function checkLogin($token)
     {
         try {
@@ -68,6 +74,22 @@ class AuthService implements IAuthService
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Checks if logged is an Admin
+     * (Need to check login first)
+     * 
+     * @return bool
+     */
+    public function checkAdmin()
+    {
+        $userId = Session::get('login')['userid'];
+        $userRole = User::where(['UserID' => $userId])->firstOrFail(['Type']);
+        if ($userRole == 'admin') {
+            return true;
+        }
+        return false;
     }
 
     /**

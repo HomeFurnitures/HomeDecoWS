@@ -12,5 +12,7 @@ interface IAuthService
     
     public function checkLogin($token);
     
+    public function checkAdmin();
+    
     public function validJson($dataJson);
 }

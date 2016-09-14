@@ -40,15 +40,15 @@ class LoginController extends Controller
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $data = json_decode($request->getContent());
-        if ($this->authService->checkUser($data)) {
-            $token = $this->authService->createToken($data->Username);
-            $response = [Config::get('enum.token') => $token];
-            return (new Response($response, 200))->header('Content-Type', 'json');
-        } 
-        
-        $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
-        return (new Response($response, 401))->header('Content-Type', 'json');        
+        $data = json_decode($request->getContent()); //TODO validator
+        if (!$this->authService->checkUser($data)) {
+            $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        $token = $this->authService->createToken($data->Username);
+        $response = [Config::get('enum.token') => $token];
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**

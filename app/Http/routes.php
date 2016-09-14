@@ -38,5 +38,6 @@ Route::resource('order', 'OrderController',
  * Route user requests
  */
 Route::get('user/self', 'UserController@getThisUser');
+Route::put('user/self', 'UserController@updateThisUser');
 Route::resource('user', 'UserController',
     ['except' => ['create', 'edit']]);

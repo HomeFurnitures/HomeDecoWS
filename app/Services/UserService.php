@@ -30,6 +30,25 @@ class UserService implements IUserService
         ];
     }
 
+    public function userUpdateRules()
+    {
+        return [
+            'User.Username'             => 'alpha_dash|min:4|max:32|unique:users,Username',
+            'User.Password'             => 'min:6|max:32|password',
+            'User.Email'                => 'email|max:64|unique:users,Email',
+            "Userdetail.FirstName"      => 'alpha|max:32',
+            "Userdetail.LastName"       => 'alpha|max:32',
+            "Userdetail.Birthday"       => 'date_format:d/m/Y',
+            "Userdetail.Address"        => 'alpha_num_spaces|max:64',
+            "Userdetail.PostalCode"     => 'alpha_num|max:32',
+            "Userdetail.City"           => 'alpha|max:85',
+            "Userdetail.State"          => 'alpha|max:64',
+            "Userdetail.Country"        => 'alpha|max:64',
+            "Userdetail.Phone"          => 'phone|min:10|max:20',
+            "Userdetail.MobilePhone"    => 'phone|min:10|max:20'
+        ];
+    }
+
     public function registerUser($fullUser)
     {
         $user = new User();

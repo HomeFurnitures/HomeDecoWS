@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Session;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 use App\Http\Requests;
 use App\Services\Interfaces\IProductService;
+use App\Services\Interfaces\IAuthService;
+use Config;
+use Validator;
 
 class ProductController extends Controller
 {
     protected $productService;
+    protected $authService;
 
     /**
      * Initialize product service.
      */
-    public function __construct(IProductService $productService)
+    public function __construct(IProductService $productService, IAuthService $authService)
     {
         $this->productService = $productService;
+        $this->authService = $authService;
     }
 
     /**
@@ -29,7 +32,6 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //$result = DB::select('select * from products');
         $response = $this->productService->getAllProducts();
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
@@ -54,17 +56,36 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //TODO store product in db
-        if (Session::get('login')) {
-            $session = Session::get('login');
-            if ($request->header('x-my-token') == $session['token']) {
-                echo("Product created [*__*] UserID = " . $session['userid']);
-            } else {
-                echo 'token mismatch';
-            }
-        } else {
-            echo 'unothorized';
+        if ($request->getContent() == null) {
+            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
         }
+
+        if (!$this->authService->validJson($request->getContent())) {
+            $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+        
+        $token = $request->header('x-my-token');
+        if (!$this->authService->checkLogin($token)) {
+            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+        
+        if (!$this->authService->checkAdmin()) {
+            $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $validator = Validator::make($data, $this->productService->productRules());
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
+        
+        $this->productService->createProduct($data);
+        $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
+        return (new Response($response, 201))->header('Content-Type', 'json');
     }
 
     /**
@@ -76,17 +97,59 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //TODO
+        if ($request->getContent() == null) {
+            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
+        if (!$this->authService->validJson($request->getContent())) {
+            $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
+            return (new Response($response, 400))->header('Content-Type', 'json');
+        }
+
+        $token = $request->header('x-my-token');
+        if (!$this->authService->checkLogin($token)) {
+            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        if (!$this->authService->checkAdmin()) {
+            $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $validator = Validator::make($data, $this->productService->productUpdateRules());
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
+
+        $this->productService->updateProduct($data, $id);
+        $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
      * Remove the specified product from storage.
      *
+     * @param  \Illuminate\Http\Request $request
      * @param  Integer $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        //TODO
-    }
+        $token = $request->header('x-my-token');
+        if (!$this->authService->checkLogin($token)) {
+            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        if (!$this->authService->checkAdmin()) {
+            $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+        
+        $this->productService->deleteProduct($id);
+        $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
+        return (new Response($response, 200))->header('Content-Type', 'json');    }
 }
