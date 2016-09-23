@@ -49,12 +49,7 @@ class AuthService implements IAuthService
      */
     public function destroySession()
     {
-        try {
-            Session::forget('login');
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
+        Session::forget('login');
     }
 
     /**

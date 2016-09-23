@@ -105,6 +105,11 @@ class OrderController extends Controller
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:orders,OrderID']);
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
+
         $response = $this->orderService->getOrderById($id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
@@ -118,7 +123,6 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //Maybe not needed
         return (new Response('', 501))->header('Content-Type', 'json');
     }
 

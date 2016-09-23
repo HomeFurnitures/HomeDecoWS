@@ -101,6 +101,11 @@ class UserController extends Controller
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:users,UserID']);
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
+
         $response = $this->userService->getUserById($id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }

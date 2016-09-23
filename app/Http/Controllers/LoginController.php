@@ -60,12 +60,13 @@ class LoginController extends Controller
      */
     public function logOut()
     {
-        if($this->authService->destroySession()) {
+        try {
+            $this->authService->destroySession();
             $response = [Config::get('enum.message') => Config::get('enum.successLogOut')];
             return (new Response($response, 200))->header('Content-Type', 'json');
+        } catch (\Exception $e) {
+            $response = [Config::get('enum.message') => Config::get('enum.failLogOut')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
         }
-
-        $response = [Config::get('enum.message') => Config::get('enum.failLogOut')];
-        return (new Response($response, 401))->header('Content-Type', 'json');
     }
 }

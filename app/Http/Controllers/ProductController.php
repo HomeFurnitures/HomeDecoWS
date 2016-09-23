@@ -44,6 +44,10 @@ class ProductController extends Controller
      */
     public function show($id)
     {
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,ProductID']);
+        if ($validator->fails()) {
+            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
+        }
         $response = $this->productService->getProductById($id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }

@@ -15,6 +15,6 @@ return [
     'successLogOut' => 'Logged out successfully',
     
     //Response keys
-    'token' => 'x-my-token',
+    'token' => 'X-Auth-Token',
     'message' => 'Message',
 ];
