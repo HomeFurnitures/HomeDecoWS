@@ -6,7 +6,6 @@ use App\Order;
 use App\Orderdetail;
 use App\Product;
 use App\Services\Interfaces\IOrderService;
-use Session;
 
 class OrderService implements IOrderService
 {
@@ -26,6 +25,18 @@ class OrderService implements IOrderService
         $orderProducts = Orderdetail::where(['OrderID' => $id])->get(['ProductID'])->toArray();
         $order = array_add($order, 'products', $orderProducts);
         return $order;
+    }
+
+    public function getOrdersByUserId($id)
+    {
+        $orders = Order::where(['UserID' => $id])->get()->toArray();
+        $fullOrders = [];
+        foreach ($orders as $order) {
+            $orderProducts = Orderdetail::where(['OrderID' => $order['OrderID']])->get(['ProductID', 'Quantity'])->toArray();
+            $order = array_add($order, 'products', $orderProducts);
+            array_push($fullOrders, $order);
+        }
+        return $fullOrders;
     }
 
     public function createOrder($data)
@@ -64,20 +75,6 @@ class OrderService implements IOrderService
     public function deleteOrder($id)
     {
         Order::destroy($id);
-    }
-
-    public function getSessionOrders()
-    {
-        $id = Session::get('login')['userid'];
-        $orders = Order::where(['UserID' => $id])->get()->toArray();
-        $fullOrders = [];
-        foreach ($orders as $order) {
-            $orderProducts = Orderdetail::where(['OrderID' => $order['OrderID']])->get(['ProductID', 'Quantity'])->toArray();
-            $order = array_add($order, 'products', $orderProducts);
-            array_push($fullOrders, $order);
-        }
-
-        return $fullOrders;
     }
 
     public function orderRules()

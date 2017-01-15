@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
+use Auth;
 use Config;
 
 use Illuminate\Http\Request;
@@ -9,6 +11,7 @@ use Illuminate\Http\Response;
 
 use App\Http\Requests;
 use App\Services\Interfaces\IAuthService;
+use Validator;
 
 class LoginController extends Controller
 {
@@ -30,26 +33,24 @@ class LoginController extends Controller
      */
     public function logIn(Request $request)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
-        if (!$this->authService->validJson($request->getContent())) {
+         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $data = json_decode($request->getContent()); 
-        //TODO data validator
-        if (!$this->authService->checkUser($data)) {
+        $data = json_decode($request->getContent(), true);
+        $validator = Validator::make($data, $this->authService->loginRules());
+        if ($validator->fails()) {
             $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        //Maybe add brute force, DDOS protection
-        $token = $this->authService->createToken($data->Username);
-        $response = [Config::get('enum.token') => $token];
+        if (!Auth::attempt($data)) {
+            $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
+            return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        $response = [Config::get('enum.message') => Config::get('enum.successLogIn')];
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
@@ -60,13 +61,12 @@ class LoginController extends Controller
      */
     public function logOut()
     {
-        try {
-            $this->authService->destroySession();
-            $response = [Config::get('enum.message') => Config::get('enum.successLogOut')];
-            return (new Response($response, 200))->header('Content-Type', 'json');
-        } catch (\Exception $e) {
-            $response = [Config::get('enum.message') => Config::get('enum.failLogOut')];
-            return (new Response($response, 401))->header('Content-Type', 'json');
-        }
+        if(Auth::check())
+            $response = Auth::user();
+        else
+            $response = ["msg" => "not logged :@@@@"];
+
+        return (new Response($response, 200))->header('Content-Type', 'json');
+       //Auth::logout();
     }
 }

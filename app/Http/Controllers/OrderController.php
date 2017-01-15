@@ -6,6 +6,7 @@ use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IOrderService;
 use App\Http\Requests;
 
+use Auth;
 use Config;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,18 +30,16 @@ class OrderController extends Controller
     /**
      * Display a listing of the orders.
      *
-     * @param  \Illuminate\Http\Request $request 
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -57,11 +56,6 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
@@ -88,19 +82,17 @@ class OrderController extends Controller
     /**
      * Display the specified order.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $id)
+    public function show($id)
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -129,19 +121,17 @@ class OrderController extends Controller
     /**
      * Remove the specified order from storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -153,18 +143,16 @@ class OrderController extends Controller
     /**
      * Get logged user's orders.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function getUserOrders(Request $request)
-    {        
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+    public function getUserOrders()
+    {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        $response = $this->orderService->getSessionOrders();
+        $response = $this->orderService->getOrdersByUserId(Auth::user()->id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 }

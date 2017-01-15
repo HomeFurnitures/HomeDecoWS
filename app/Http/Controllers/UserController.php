@@ -6,10 +6,10 @@ use App\Http\Requests;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IUserService;
 
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Config;
-use Session;
 use Validator;
 
 class UserController extends Controller
@@ -32,18 +32,16 @@ class UserController extends Controller
     /**
      * Get all the users from storage.
      *
-     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -60,11 +58,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
@@ -79,24 +72,24 @@ class UserController extends Controller
         $this->userService->registerUser($data);
         $response = [Config::get('enum.message') => Config::get('enum.successRegister')];
         return (new Response($response, 201))->header('Content-Type', 'json');
+
+
     }
 
     /**
      * Get the specified User.
      *
-     * @param  \Illuminate\Http\Request $request
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $id)
+    public function show($id)
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -119,23 +112,17 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -153,19 +140,17 @@ class UserController extends Controller
     /**
      * Remove the specified User from storage.
      *
-     * @param  \Illuminate\Http\Request $request
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -177,18 +162,16 @@ class UserController extends Controller
     /**
      * Get logged user's details.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function getThisUser(Request $request)
+    public function getThisUser()
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
-
-        $response = $this->userService->getSessionUser();
+        
+        $response = $this->userService->getLoggedUser(Auth::user());
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
@@ -200,29 +183,23 @@ class UserController extends Controller
      */
     public function updateThisUser(Request $request)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
-
+        
         $data = json_decode($request->getContent(), true);
         $validator = Validator::make($data, $this->userService->userUpdateRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        $response = $this->userService->updateUser($data, Session::get('login')['userid']);
+        $response = $this->userService->updateUser($data, Auth::user()->id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 }

@@ -13,8 +13,9 @@ return [
     'successRegister' => 'Registration completed successfully!',
     'successOrder' => 'Order completed successfully!',    
     'successLogOut' => 'Logged out successfully',
+    'successLogIn' => 'Logged in successfully',
     
     //Response keys
-    'token' => 'X-Auth-Token',
+    'token' => 'x-my-token',
     'message' => 'Message',
 ];

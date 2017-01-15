@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -60,23 +61,17 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->getContent() == null) {
-            $response = [Config::get('enum.message') => Config::get('enum.nullRequest')];
-            return (new Response($response, 400))->header('Content-Type', 'json');
-        }
-
         if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
-        
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
-        
-        if (!$this->authService->checkAdmin()) {
+
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -111,13 +106,12 @@ class ProductController extends Controller
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
@@ -136,19 +130,17 @@ class ProductController extends Controller
     /**
      * Remove the specified product from storage.
      *
-     * @param  \Illuminate\Http\Request $request
      * @param  Integer $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
-        $token = $request->header('x-my-token');
-        if (!$this->authService->checkLogin($token)) {
+        if (!Auth::check()) {
             $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        if (!$this->authService->checkAdmin()) {
+        if (!(Auth::user()->type == 'admin')) {
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }

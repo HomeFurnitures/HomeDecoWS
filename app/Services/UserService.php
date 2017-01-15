@@ -6,7 +6,6 @@ use App\Services\Interfaces\IUserService;
 use App\User;
 use App\Userdetail;
 use DateTime;
-use Session;
 
 class UserService implements IUserService
 {
@@ -14,48 +13,48 @@ class UserService implements IUserService
     public function userRules()
     {
         return [
-            'User.Username'             => 'required|alpha_dash|min:4|max:32|unique:users,Username',
-            'User.Password'             => 'required|min:6|max:32|password',
-            'User.Email'                => 'required|email|max:64|unique:users,Email',
-            "Userdetail.FirstName"      => 'required|alpha|max:32',
-            "Userdetail.LastName"       => 'required|alpha|max:32',
-            "Userdetail.Birthday"       => 'required|date_format:d/m/Y',
-            "Userdetail.Address"        => 'alpha_num_spaces|max:64',
-            "Userdetail.PostalCode"     => 'alpha_num|max:32',
-            "Userdetail.City"           => 'alpha|max:85',
-            "Userdetail.State"          => 'alpha|max:64',
-            "Userdetail.Country"        => 'alpha|max:64',
-            "Userdetail.Phone"          => 'phone|min:10|max:20',
-            "Userdetail.MobilePhone"    => 'phone|min:10|max:20'
+            'User.Username' => 'required|alpha_dash|min:4|max:32|unique:users,Username',
+            'User.Password' => 'required|min:6|max:32|password',
+            'User.Email' => 'required|email|max:64|unique:users,Email',
+            "Userdetail.FirstName" => 'required|alpha|max:32',
+            "Userdetail.LastName" => 'required|alpha|max:32',
+            "Userdetail.Birthday" => 'required|date_format:d/m/Y',
+            "Userdetail.Address" => 'alpha_num_spaces|max:64',
+            "Userdetail.PostalCode" => 'alpha_num|max:32',
+            "Userdetail.City" => 'alpha|max:85',
+            "Userdetail.State" => 'alpha|max:64',
+            "Userdetail.Country" => 'alpha|max:64',
+            "Userdetail.Phone" => 'phone|min:10|max:20',
+            "Userdetail.MobilePhone" => 'phone|min:10|max:20'
         ];
     }
 
     public function userUpdateRules()
     {
         return [
-            'User.Username'             => 'alpha_dash|min:4|max:32|unique:users,Username',
-            'User.Password'             => 'min:6|max:32|password',
-            'User.Email'                => 'email|max:64|unique:users,Email',
-            "Userdetail.FirstName"      => 'alpha|max:32',
-            "Userdetail.LastName"       => 'alpha|max:32',
-            "Userdetail.Birthday"       => 'date_format:d/m/Y',
-            "Userdetail.Address"        => 'alpha_num_spaces|max:64',
-            "Userdetail.PostalCode"     => 'alpha_num|max:32',
-            "Userdetail.City"           => 'alpha|max:85',
-            "Userdetail.State"          => 'alpha|max:64',
-            "Userdetail.Country"        => 'alpha|max:64',
-            "Userdetail.Phone"          => 'phone|min:10|max:20',
-            "Userdetail.MobilePhone"    => 'phone|min:10|max:20'
+            'User.Username' => 'alpha_dash|min:4|max:32|unique:users,Username',
+            'User.Password' => 'min:6|max:32|password',
+            'User.Email' => 'email|max:64|unique:users,Email',
+            "Userdetail.FirstName" => 'alpha|max:32',
+            "Userdetail.LastName" => 'alpha|max:32',
+            "Userdetail.Birthday" => 'date_format:d/m/Y',
+            "Userdetail.Address" => 'alpha_num_spaces|max:64',
+            "Userdetail.PostalCode" => 'alpha_num|max:32',
+            "Userdetail.City" => 'alpha|max:85',
+            "Userdetail.State" => 'alpha|max:64',
+            "Userdetail.Country" => 'alpha|max:64',
+            "Userdetail.Phone" => 'phone|min:10|max:20',
+            "Userdetail.MobilePhone" => 'phone|min:10|max:20'
         ];
     }
 
     public function registerUser($fullUser)
     {
-        $user = new User();
-        $user->Username = $fullUser['User']['Username'];
-        $user->Password = $fullUser['User']['Password'];
-        $user->Email = $fullUser['User']['Email'];
-        $user->save();
+        $user = User::create([
+            'username' => $fullUser['User']['Username'],
+            'password' => bcrypt($fullUser['User']['Password']),
+            'email' => $fullUser['User']['Email'],
+        ]);
         $thisUserId = $user->id;
 
         $date = DateTime::createFromFormat('d/m/Y', $fullUser['Userdetail']['Birthday']);
@@ -100,14 +99,12 @@ class UserService implements IUserService
      *
      * @return array
      */
-    public function getSessionUser()
+    public function getLoggedUser($user)
     {
-        $id = Session::get('login')['userid'];
-        $user = User::where(['UserID' => $id])->firstOrFail();
-        $userdetails = Userdetail::where(['UserID' => $id])->firstOrFail();
+        $userdetails = Userdetail::where(['UserID' => $user->id])->firstOrFail();
         return [
-            'Username' => $user->Username,
-            'Email' => $user->Email,
+            'Username' => $user->username,
+            'Email' => $user->email,
             'FirstName' => $userdetails->FirstName,
             'LastName' => $userdetails->LastName,
             'Birthday' => $userdetails->Birthday,

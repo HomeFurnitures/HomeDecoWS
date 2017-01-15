@@ -18,6 +18,6 @@ interface IUserService
     public function updateUser($data, $id);
 
     public function deleteUser($id);
-    
-    public function getSessionUser();
+
+    public function getLoggedUser($user);
 }
