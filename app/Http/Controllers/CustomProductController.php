@@ -7,55 +7,56 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 use App\Http\Requests;
-use App\Services\Interfaces\IProductService;
+use App\Services\Interfaces\ICustomProductService;
 use App\Services\Interfaces\IAuthService;
 use Config;
 use Validator;
 
-class ProductController extends Controller
+class CustomProductController extends Controller
 {
-    protected $productService;
+    protected $customProductService;
     protected $authService;
 
     /**
-     * Initialize product service.
+     * Initialize services.
      */
-    public function __construct(IProductService $productService, IAuthService $authService)
+    public function __construct(ICustomProductService $customProductService, IAuthService $authService)
     {
-        $this->productService = $productService;
+        $this->customProductService = $customProductService;
         $this->authService = $authService;
     }
 
     /**
-     * Get all the products from storage.
+     * Get all the product parts from storage.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $response = $this->productService->getAllProducts();
+        $response = $this->customProductService->getAllProductParts();
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
+
     /**
-     * Get the specified product from storage.
+     * Display the specified resource.
      *
-     * @param  Integer $id
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:products,ProductID']);
+        $validator = Validator::make(['id' => $id], ['id' => 'exists:custom_products,id']);
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        $response = $this->productService->getProductById($id);
+        $response = $this->customProductService->getProductPartById($id); //TODO id or catID
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
-     * Store a newly created product in storage.
+     * Store a new product parts in storage.
      *
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
@@ -78,21 +79,21 @@ class ProductController extends Controller
         }
 
         $data = json_decode($request->getContent(), true);
-        $validator = Validator::make($data, $this->productService->productRules());
+        $validator = Validator::make($data, $this->customProductService->productPartRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        $this->productService->createProduct($data);
-        $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
+        $this->customProductService->createProductPart($data);
+        $response = [Config::get('enum.message') => Config::get('enum.successProductPart')];
         return (new Response($response, 201))->header('Content-Type', 'json');
     }
 
     /**
-     * Update the specified product in storage.
+     * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  Integer $id
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -113,20 +114,20 @@ class ProductController extends Controller
         }
 
         $data = json_decode($request->getContent(), true);
-        $validator = Validator::make($data, $this->productService->productUpdateRules());
+        $validator = Validator::make($data, $this->customProductService->updateRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        $this->productService->updateProduct($data, $id);
+        $this->customProductService->updateProductPart($data, $id);
         $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
-     * Remove the specified product from storage.
+     * Remove the specified resource from storage.
      *
-     * @param  Integer $id
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -140,8 +141,8 @@ class ProductController extends Controller
             $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
-        
-        $this->productService->deleteProduct($id);
+
+        $this->customProductService->deleteProductPart($id);
         $response = [Config::get('enum.message') => Config::get('enum.successProduct')];
         return (new Response($response, 200))->header('Content-Type', 'json');
     }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Interfaces\IAuthService;
-use App\Services\Interfaces\IOrderService;
+use App\Services\Interfaces\ICustomOrderService;
 
 use Auth;
 use Config;
@@ -11,23 +11,22 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Validator;
 
-
-class OrderController extends Controller
+class CustomOrderController extends Controller
 {
-    protected $orderService;
+    protected $customOrderService;
     protected $authService;
 
     /**
-     * Initialize order service.
+     * Initialize services.
      */
-    public function __construct(IOrderService $orderService, IAuthService $authService)
+    public function __construct(ICustomOrderService $customOrderService, IAuthService $authService)
     {
-        $this->orderService = $orderService;
+        $this->customOrderService = $customOrderService;
         $this->authService = $authService;
     }
 
     /**
-     * Display a listing of the orders.
+     * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
@@ -43,14 +42,15 @@ class OrderController extends Controller
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        $response = $this->orderService->getAllOrders();
+        $response = $this->customOrderService->getAllOrders();
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
+
     /**
-     * Store a newly created order in storage.
+     * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -61,17 +61,18 @@ class OrderController extends Controller
         }
 
         $data = json_decode($request->getContent(), true);
-        $validator = Validator::make($data, $this->orderService->orderRules());
+        $validator = Validator::make($data, $this->customOrderService->orderRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        foreach ($data['Products'] as $product) {
-            $productValidator = Validator::make($product, $this->orderService->orderProductRules());
+        //TODO productpart rules
+        /*foreach ($data['Products'] as $product) {
+            $productValidator = Validator::make($product, $this->orderService->orderProductPartRules());
             if ($productValidator->fails()) {
                 return (new Response($productValidator->messages(), 400))->header('Content-Type', 'json');
             }
-        }
+        }*/
 
         $android = $request->header('android');
         $androidToken = $request->header('android-token');
@@ -83,43 +84,27 @@ class OrderController extends Controller
             $data['UserID'] = null;
         }
 
-        $this->orderService->createOrder($data);
+        $this->customOrderService->createOrder($data);
         $response = [Config::get('enum.message') => Config::get('enum.successOrder')];
         return (new Response($response, 201))->header('Content-Type', 'json');
     }
 
     /**
-     * Display the specified order.
+     * Display the specified resource.
      *
-     * @param  int $id
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        if (!Auth::check()) {
-            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
-            return (new Response($response, 401))->header('Content-Type', 'json');
-        }
-
-        if (!(Auth::user()->type == 'admin')) {
-            $response = [Config::get('enum.message') => Config::get('enum.notAdmin')];
-            return (new Response($response, 401))->header('Content-Type', 'json');
-        }
-
-        $validator = Validator::make(['id' => $id], ['id' => 'exists:orders,OrderID']);
-        if ($validator->fails()) {
-            return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
-        }
-
-        $response = $this->orderService->getOrderById($id);
-        return (new Response($response, 200))->header('Content-Type', 'json');
+        //TODO admin
     }
 
     /**
-     * Update the specified order in storage.
+     * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  int $id
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -128,9 +113,9 @@ class OrderController extends Controller
     }
 
     /**
-     * Remove the specified order from storage.
+     * Remove the specified resource from storage.
      *
-     * @param  int $id
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -145,7 +130,7 @@ class OrderController extends Controller
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
-        $response = $this->orderService->deleteOrder($id);
+        $response = $this->customOrderService->deleteOrder($id);
         return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
@@ -160,12 +145,12 @@ class OrderController extends Controller
         $androidToken = $request->header('android-token');
         if (isset($android) && $this->authService->checkAndroidAuth($androidToken)) {
             $userId = $this->authService->getAndroidUserId($androidToken);
-            $response = $this->orderService->getOrdersByUserId($userId);
+            $response = $this->customOrderService->getOrdersByUserId($userId);
             return (new Response($response, 200))->header('Content-Type', 'json');
         }
 
         if (Auth::check()) {
-            $response = $this->orderService->getOrdersByUserId(Auth::user()->id);
+            $response = $this->customOrderService->getOrdersByUserId(Auth::user()->id);
             return (new Response($response, 200))->header('Content-Type', 'json');
         }
 

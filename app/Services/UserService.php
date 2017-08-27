@@ -6,6 +6,7 @@ use App\Services\Interfaces\IUserService;
 use App\User;
 use App\Userdetail;
 use DateTime;
+use DB;
 
 class UserService implements IUserService
 {
@@ -81,17 +82,32 @@ class UserService implements IUserService
 
     public function getUserById($id)
     {
-        return User::where(['UserID' => $id])->get(); //TODO details
+        return User::where(['id' => $id])->get(); //TODO details
     }
 
     public function updateUser($data, $id)
     {
-        // TODO: Implement updateUser() method.
+        $user = User::find($id);
+        if (isset($data['User']['Username']))
+            $user->username = $data['User']['Username'];
+        if (isset($data['User']['Password']))
+            $user->password = bcrypt($data['User']['Password']);
+        if (isset($data['User']['Email']))
+            $user->email = $data['User']['Email'];
+        $user->save();
+
+        $userDetail =  DB::table('userdetails')->select('UserdetailsID')->where('UserID', $id)->get();
+        $userDetailId = $userDetail['0']->UserdetailsID;
+        if (isset($data['Userdetail']))
+            DB::table('userdetails')
+            ->where('UserdetailsID', $userDetailId)
+            ->update($data['Userdetail']);
+             
     }
 
     public function deleteUser($id)
     {
-        User::destroy($id);
+        User::destroy($id); //TODO delete order
     }
 
     /**
@@ -99,9 +115,10 @@ class UserService implements IUserService
      *
      * @return array
      */
-    public function getLoggedUser($user)
+    public function getLoggedUser($userId)
     {
-        $userdetails = Userdetail::where(['UserID' => $user->id])->firstOrFail();
+        $user = User::find($userId);
+        $userdetails = Userdetail::where(['UserID' => $userId])->firstOrFail();
         return [
             'Username' => $user->username,
             'Email' => $user->email,

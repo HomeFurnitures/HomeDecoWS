@@ -19,5 +19,5 @@ interface IUserService
 
     public function deleteUser($id);
 
-    public function getLoggedUser($user);
+    public function getLoggedUser($userId);
 }

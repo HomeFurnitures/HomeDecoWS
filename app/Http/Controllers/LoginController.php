@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
 use Auth;
 use Config;
-
+use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-use App\Http\Requests;
 use App\Services\Interfaces\IAuthService;
-use Validator;
 
 class LoginController extends Controller
 {
@@ -33,7 +30,7 @@ class LoginController extends Controller
      */
     public function logIn(Request $request)
     {
-         if (!$this->authService->validJson($request->getContent())) {
+        if (!$this->authService->validJson($request->getContent())) {
             $response = [Config::get('enum.message') => Config::get('enum.invalidJson')];
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
@@ -45,9 +42,19 @@ class LoginController extends Controller
             return (new Response($response, 401))->header('Content-Type', 'json');
         }
 
+
         if (!Auth::attempt($data)) {
             $response = [Config::get('enum.message') => Config::get('enum.failLogIn')];
             return (new Response($response, 401))->header('Content-Type', 'json');
+        }
+
+        // Separate login for android
+        $android = $request->header('android');
+        if (isset($android)) {
+            $androidToken = uniqid("", false);
+            $this->authService->androidLogin(Auth::user()->id, $androidToken);
+            $response = [Config::get('enum.token') => $androidToken];
+            return (new Response($response, 200))->header('Content-Type', 'json');
         }
 
         $response = [Config::get('enum.message') => Config::get('enum.successLogIn')];
@@ -59,14 +66,41 @@ class LoginController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function logOut()
+    public function logOut(Request $request)
     {
-        if(Auth::check())
-            $response = Auth::user();
-        else
-            $response = ["msg" => "not logged :@@@@"];
+        $response = [Config::get('enum.message') => Config::get('enum.successLogOut')];
 
+        // Android separate log out
+        $android = $request->header('android');
+        $androidToken = $request->header('android-token');
+        if (isset($android) && $this->authService->checkAndroidAuth($androidToken)) {
+            $id = $this->authService->getAndroidUserId($androidToken);
+            $this->authService->androidLogOut($id);
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        if (Auth::check()) {
+            Auth::logout();
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        $response = [Config::get('enum.message') => Config::get('enum.failLogOut')];
         return (new Response($response, 200))->header('Content-Type', 'json');
-       //Auth::logout();
+    }
+
+    /**
+     * Check if user is logged in
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function checkLogIn()
+    {
+        if (Auth::check()) {
+            $response = [Config::get('enum.message') => true];
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        $response = [Config::get('enum.message') => false];
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 }

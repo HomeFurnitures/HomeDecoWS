@@ -21,8 +21,10 @@ class Order extends BaseModel
         'MobilePhone',
         'Phone',
         'ShippingMethod',
+        'PaymentMethod',
         'Email',
         'FullName',
-        'Price'
+        'Price',
+        'Date'
     ];
 }

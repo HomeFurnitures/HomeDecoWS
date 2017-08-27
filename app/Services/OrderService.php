@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Order;
 use App\Orderdetail;
 use App\Product;
+use Carbon\Carbon;
 use App\Services\Interfaces\IOrderService;
 
 class OrderService implements IOrderService
@@ -12,17 +13,21 @@ class OrderService implements IOrderService
     public function getAllOrders()
     {
         $orders = Order::all()->toArray();
+        $fullOrders = [];
         foreach ($orders as $order) {
-            $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get(['ProductID'])->toArray();
-            $order = array_add($order, 'products', $orderProducts);
+            if(Orderdetail::where(['OrderID' => $order->OrderID])->first()) {
+                $orderProducts = Orderdetail::where(['OrderID' => $order->OrderID])->get(['ProductID', 'Quantity'])->toArray();
+                array_add($order, 'products', $orderProducts);
+                array_push($fullOrders, $order);
+            }
         }
-        return $orders;
+        return $fullOrders;
     }
 
     public function getOrderById($id)
     {
         $order = Order::where(['OrderID' => $id])->firstOrFail()->toArray();
-        $orderProducts = Orderdetail::where(['OrderID' => $id])->get(['ProductID'])->toArray();
+        $orderProducts = Orderdetail::where(['OrderID' => $id])->get(['ProductID', 'Quantity'])->toArray();
         $order = array_add($order, 'products', $orderProducts);
         return $order;
     }
@@ -32,9 +37,11 @@ class OrderService implements IOrderService
         $orders = Order::where(['UserID' => $id])->get()->toArray();
         $fullOrders = [];
         foreach ($orders as $order) {
-            $orderProducts = Orderdetail::where(['OrderID' => $order['OrderID']])->get(['ProductID', 'Quantity'])->toArray();
-            $order = array_add($order, 'products', $orderProducts);
-            array_push($fullOrders, $order);
+            if(Orderdetail::where(['OrderID' => $order['OrderID']])->first()) {
+                $orderProducts = Orderdetail::where(['OrderID' => $order['OrderID']])->get(['ProductID', 'Quantity'])->toArray();
+                $order = array_add($order, 'products', $orderProducts);
+                array_push($fullOrders, $order);
+            }
         }
         return $fullOrders;
     }
@@ -52,9 +59,11 @@ class OrderService implements IOrderService
         $order->MobilePhone = $data['MobilePhone'];
         $order->Phone = $data['Phone'];
         $order->ShippingMethod = $data['ShippingMethod'];
+        $order->PaymentMethod = $data['PaymentMethod'];
         $order->Email = $data['Email'];
         $order->FullName = $data['FullName'];
         $order->Price = $data['Price'];
+        $order->Date = Carbon::now('Europe/Athens');
         $order->save();
         $thisOrderId = $order->id;
 
@@ -74,7 +83,7 @@ class OrderService implements IOrderService
 
     public function deleteOrder($id)
     {
-        Order::destroy($id);
+        //todo Order::destroy($id);
     }
 
     public function orderRules()
@@ -89,7 +98,8 @@ class OrderService implements IOrderService
             'Country' => 'required|alpha|max:64',
             'MobilePhone' => 'required|phone|min:10|max:20',
             'Phone' => 'phone|min:10|max:20',
-            'ShippingMethod' => 'required|alpha|max:32',
+            'ShippingMethod' => 'required|alpha_spaces|max:32',
+            'PaymentMethod' => 'required|alpha_spaces|max:32',
             'Email' => 'required|email|max:64',
             'FullName' => 'required|alpha_spaces|max:128',
             'Price' => 'required|numeric|min:0',

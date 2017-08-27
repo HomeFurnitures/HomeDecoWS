@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IUserService;
 
@@ -19,7 +18,7 @@ class UserController extends Controller
 
     /**
      * Initialize user service.
-     * 
+     *
      * @param IUserService $userService
      * @param IAuthService $authService
      */
@@ -132,9 +131,9 @@ class UserController extends Controller
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
-        
+
         $response = $this->userService->updateUser($data, $id);
-        return (new Response($response, 200))->header('Content-Type', 'json');        
+        return (new Response($response, 200))->header('Content-Type', 'json');
     }
 
     /**
@@ -164,15 +163,24 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function getThisUser()
+    public function getThisUser(Request $request)
     {
-        if (!Auth::check()) {
-            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
-            return (new Response($response, 401))->header('Content-Type', 'json');
+        //Separate android call
+        $android = $request->header('android');
+        $androidToken = $request->header('android-token');
+        if (isset($android) && $this->authService->checkAndroidAuth($androidToken)) {
+            $userId = $this->authService->getAndroidUserId($androidToken);
+            $response = $this->userService->getLoggedUser($userId);
+            return (new Response($response, 200))->header('Content-Type', 'json');
         }
-        
-        $response = $this->userService->getLoggedUser(Auth::user());
-        return (new Response($response, 200))->header('Content-Type', 'json');
+
+        if (Auth::check()) {
+            $response = $this->userService->getLoggedUser(Auth::user()->id);
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+        return (new Response($response, 401))->header('Content-Type', 'json');
     }
 
     /**
@@ -188,18 +196,27 @@ class UserController extends Controller
             return (new Response($response, 400))->header('Content-Type', 'json');
         }
 
-        if (!Auth::check()) {
-            $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
-            return (new Response($response, 401))->header('Content-Type', 'json');
-        }
-        
         $data = json_decode($request->getContent(), true);
         $validator = Validator::make($data, $this->userService->userUpdateRules());
         if ($validator->fails()) {
             return (new Response($validator->messages(), 400))->header('Content-Type', 'json');
         }
 
-        $response = $this->userService->updateUser($data, Auth::user()->id);
-        return (new Response($response, 200))->header('Content-Type', 'json');
+        //Separate android call
+        $android = $request->header('android');
+        $androidToken = $request->header('android-token');
+        if (isset($android) && $this->authService->checkAndroidAuth($androidToken)) {
+            $userId =$this->authService->getAndroidUserId($androidToken);
+            $response = $this->userService->updateUser($data, $userId);
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        if (Auth::check()) {
+            $response = $this->userService->updateUser($data, Auth::user()->id);
+            return (new Response($response, 200))->header('Content-Type', 'json');
+        }
+
+        $response = [Config::get('enum.message') => Config::get('enum.notLogged')];
+        return (new Response($response, 401))->header('Content-Type', 'json');
     }
 }

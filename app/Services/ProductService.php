@@ -3,17 +3,29 @@ namespace App\Services;
 
 use App\Services\Interfaces\IProductService;
 use App\Product;
+use DB;
 
 class ProductService implements IProductService
 {
     public function getAllProducts()
     {
-        return Product::all();
+        //return Product::all();
+
+        $products = DB::table('products')
+            ->join('categories', 'products.CategoryID', '=', 'categories.CatID')
+            ->select('products.*', 'categories.MainCategory', 'categories.SubCategory')
+            ->get();
+        return $products;
     }
 
     public function getProductById($id)
     {
-        return Product::where(['ProductID' => $id])->get();
+        $product = DB::table('products')
+            ->where('ProductID', '=', $id)
+            ->join('categories', 'products.CategoryID', '=', 'categories.CatID')
+            ->select('products.*', 'categories.MainCategory', 'categories.SubCategory')
+            ->get();
+        return $product;
     }
 
     public function createProduct($data)
